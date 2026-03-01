@@ -12,6 +12,7 @@ import 'package:safelink_aid/features/authorization/controllers/auth_controller.
 import 'package:safelink_aid/features/authorization/controllers/image_picking_controller.dart';
 import 'package:safelink_aid/core/widgets/custom_elevated_button.dart';
 import 'package:safelink_aid/features/authorization/controllers/sign_up_page_controller.dart';
+import 'package:safelink_aid/features/authorization/models/auth_models.dart';
 import 'package:safelink_aid/features/authorization/presentation/widgets/custom_text_form_field.dart';
 import 'package:safelink_aid/features/authorization/presentation/widgets/date_picker_text_field.dart';
 import 'package:safelink_aid/features/authorization/presentation/widgets/social_button.dart';
@@ -30,6 +31,9 @@ class _SignUpViewState extends State<SignUpView> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _cnicController = TextEditingController();
+  final TextEditingController _organizationController = TextEditingController();
+  final TextEditingController _designationController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
@@ -47,9 +51,14 @@ class _SignUpViewState extends State<SignUpView> {
     _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _cnicController.dispose();
+    _organizationController.dispose();
+    _designationController.dispose();
     _dobController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _imagePickingController.dispose();
+    _signUpPageController.dispose();
     super.dispose();
   }
 
@@ -87,22 +96,23 @@ class _SignUpViewState extends State<SignUpView> {
                     break;
                 }
                 return SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.all(40.r),
-                    child: Column(
-                      children: [
-                        Align(
-                          alignment: Alignment.topLeft,
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back_ios),
-                            onPressed: () =>
-                                _signUpPageController.previousPage(),
-                          ),
+                  physics: BouncingScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 40.w,
+                    vertical: 20.h,
+                  ),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios),
+                          onPressed: () => _signUpPageController.previousPage(),
                         ),
-                        SizedBox(height: 30.h),
-                        page,
-                      ],
-                    ),
+                      ),
+                      SizedBox(height: 20.h),
+                      page,
+                    ],
                   ),
                 );
               },
@@ -245,6 +255,22 @@ class _SignUpViewState extends State<SignUpView> {
           controller: _phoneController,
           validator: (value) => Validators.validatePhoneNumber(value),
           icon: CupertinoIcons.phone,
+        ),
+        SizedBox(height: 20.h),
+        CustomTextFormField(
+          label: 'CNIC',
+          hintText: 'Enter CNIC',
+          controller: _cnicController,
+          validator: (value) => Validators.validateCNIC(value),
+          icon: CupertinoIcons.creditcard,
+        ),
+        SizedBox(height: 20.h),
+        CustomTextFormField(
+          label: 'Designation',
+          hintText: 'Enter designation',
+          controller: _cnicController,
+          validator: (value) => Validators.validateName(value),
+          icon: CupertinoIcons.creditcard,
         ),
         SizedBox(height: 20.h),
         DatePickerTextField(
@@ -528,14 +554,19 @@ class _SignUpViewState extends State<SignUpView> {
         CustomElevatedButton(
           label: 'Complete Registration',
           onPressed: () => _authController.signUp(
-            firstName: _firstNameController.text.trim(),
-            lastName: _lastNameController.text.trim(),
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-            dateOfBirth: _dobController.text.trim(),
-            profilePicture: _imagePickingController.selectedImage.value != null
-                ? File(_imagePickingController.selectedImage.value!.path)
-                : null,
+            SignUpModel(
+              firstName: _firstNameController.text.trim(),
+              lastName: _lastNameController.text.trim(),
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+              phone: _phoneController.text.trim(),
+              cnic: _cnicController.text.trim(),
+              dateOfBirth: _dobController.text.trim(),
+              profilePicture:
+              _imagePickingController.selectedImage.value != null
+                  ? File(_imagePickingController.selectedImage.value!.path)
+                  : null,
+            ),
           ),
         ),
         SizedBox(height: 10.h),

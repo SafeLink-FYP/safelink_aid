@@ -76,6 +76,24 @@ class Validators {
     return null;
   }
 
+  // CNIC VALIDATION (Pakistan)
+  static String? validateCNIC(String? cnic) {
+    final value = cnic?.trim() ?? '';
+
+    if (value.isEmpty) {
+      return 'CNIC is required';
+    }
+
+    // Format: 35202-1234567-1
+    final regex = RegExp(r'^[0-9]{5}-[0-9]{7}-[0-9]{1}$');
+
+    if (!regex.hasMatch(value)) {
+      return 'Enter a valid CNIC (XXXXX-XXXXXXX-X)';
+    }
+
+    return null;
+  }
+
   // DATE OF BIRTH VALIDATION
   static String? validateDOB(String? dateOfBirth) {
     if (dateOfBirth == null || dateOfBirth.isEmpty) {

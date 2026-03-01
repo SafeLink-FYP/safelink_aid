@@ -73,7 +73,7 @@ class AppTheme {
     colorScheme: ColorScheme.light(
       primary: primaryColor,
       outline: lightOutlineColor,
-      surfaceContainerHigh: borderColor,
+      surfaceContainerHigh: lightBackgroundColor,
       inverseSurface: lightGreyColor,
     ),
     iconTheme: IconThemeData(color: black, size: 20.sp),
@@ -199,7 +199,7 @@ class AppTheme {
     colorScheme: ColorScheme.dark(
       primary: primaryColor,
       outline: white.withValues(alpha: 0.20),
-      surfaceContainerHigh: white.withValues(alpha: 0.10),
+      surfaceContainerHigh: darkBackgroundColor,
       inverseSurface: white,
     ),
     iconTheme: IconThemeData(color: white, size: 20.sp),
@@ -288,7 +288,7 @@ class AppTheme {
     ),
 
     progressIndicatorTheme: ProgressIndicatorThemeData(
-      color: lightGreyColor,
+      color: white,
       linearTrackColor: darkGreyColor,
       linearMinHeight: 10.h,
       borderRadius: BorderRadius.circular(50.r),

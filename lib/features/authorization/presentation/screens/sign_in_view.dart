@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:safelink_aid/core/constants/app_assets.dart';
-import 'package:safelink_aid/core/widgets/custom_elevated_button.dart';
 import 'package:safelink_aid/features/authorization/controllers/auth_controller.dart';
+import 'package:safelink_aid/core/widgets/custom_elevated_button.dart';
+import 'package:safelink_aid/features/authorization/models/auth_models.dart';
 import 'package:safelink_aid/features/authorization/presentation/widgets/custom_text_form_field.dart';
 import 'package:safelink_aid/features/authorization/presentation/widgets/social_button.dart';
 
@@ -111,8 +112,10 @@ class _SignInViewState extends State<SignInView> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         _authController.signIn(
-                          email: _emailController.text.trim(),
-                          password: _passwordController.text,
+                          SignInModel(
+                            email: _emailController.text.trim(),
+                            password: _passwordController.text,
+                          ),
                         );
                       }
                     },

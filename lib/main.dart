@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:safelink_aid/core/controllers/theme_controller.dart';
 import 'package:safelink_aid/core/secrets/app_secrets.dart';
+import 'package:safelink_aid/core/services/initial_bindings.dart';
 import 'package:safelink_aid/core/themes/app_theme.dart';
 import 'package:safelink_aid/core/utilities/app_routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -36,10 +37,11 @@ class MyApp extends StatelessWidget {
           builder: (controller) {
             return Obx(() {
               return GetMaterialApp(
+                debugShowCheckedModeBanner: false,
                 theme: AppTheme.lightTheme,
                 darkTheme: AppTheme.darkTheme,
                 themeMode: controller.themeMode,
-                debugShowCheckedModeBanner: false,
+                initialBinding: InitialBindings(),
                 initialRoute: AppRoutes.splashView,
                 getPages: AppRoutes.routes,
               );

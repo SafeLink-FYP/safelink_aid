@@ -1,10 +1,13 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:safelink_aid/core/themes/app_theme.dart';
 import 'package:safelink_aid/core/utilities/validators.dart';
+import 'package:safelink_aid/features/authorization/controllers/auth_controller.dart';
 import 'package:safelink_aid/core/widgets/custom_elevated_button.dart';
+import 'package:safelink_aid/features/authorization/models/auth_models.dart';
 import 'package:safelink_aid/features/authorization/presentation/widgets/custom_text_form_field.dart';
 
 class ResetPasswordView extends StatefulWidget {
@@ -15,7 +18,10 @@ class ResetPasswordView extends StatefulWidget {
 }
 
 class _ResetPasswordViewState extends State<ResetPasswordView> {
+  final _formKey = GlobalKey<FormState>();
+  final AuthController _authController = Get.find<AuthController>();
   final TextEditingController _emailController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final theme = Get.theme;
@@ -26,6 +32,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 50.h),
             child: Form(
+              key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -60,10 +67,10 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                   Container(
                     padding: EdgeInsets.all(20.r),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withAlpha(10),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(15.r),
                       border: Border.all(
-                        color: AppTheme.primaryColor.withAlpha(30),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       ),
                     ),
                     child: RichText(
@@ -76,7 +83,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                           ),
                           TextSpan(
                             text:
-                                'If the email exists in our system, you\'ll receive password reset instructions within a few minutes.',
+                            'If the email exists in our system, you\'ll receive password reset instructions within a few minutes.',
                           ),
                         ],
                       ),
@@ -85,7 +92,28 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                   SizedBox(height: 35.h),
                   CustomElevatedButton(
                     label: 'Send Reset Link',
-                    onPressed: () {},
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _authController.resetPassword(
+                          ResetPasswordModel(
+                            email: _emailController.text.trim(),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  SizedBox(height: 25.h),
+                  RichText(
+                    text: TextSpan(
+                      style: theme.textTheme.bodyMedium,
+                      children: [
+                        TextSpan(
+                          text: 'Back to Login',
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () => Get.offAndToNamed('signInView'),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
