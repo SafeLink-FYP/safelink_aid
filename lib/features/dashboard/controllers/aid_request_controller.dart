@@ -4,7 +4,8 @@ import 'package:safelink_aid/core/services/supabase_service.dart';
 import 'package:safelink_aid/core/utilities/dialog_helpers.dart';
 import 'package:safelink_aid/features/dashboard/models/aid_request_model.dart';
 import 'package:safelink_aid/features/dashboard/services/aid_request_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthChangeEvent, AuthState;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show AuthChangeEvent, AuthState, PostgresChangeEvent, RealtimeChannel;
 
 class AidRequestController extends GetxController {
   final AidRequestService _service = Get.find<AidRequestService>();
@@ -18,6 +19,8 @@ class AidRequestController extends GetxController {
 
   String? _lastSeenUserId;
   StreamSubscription<AuthState>? _authSub;
+  RealtimeChannel? _channel;
+  Timer? _refreshDebounce;
 
   @override
   void onInit() {
@@ -26,11 +29,14 @@ class AidRequestController extends GetxController {
     _authSub = SupabaseService.instance.auth.onAuthStateChange
         .listen(_onAuthChange);
     loadRequests();
+    if (_lastSeenUserId != null) _subscribeRealtime();
   }
 
   @override
   void onClose() {
     _authSub?.cancel();
+    _refreshDebounce?.cancel();
+    _unsubscribeRealtime();
     super.onClose();
   }
 
@@ -41,15 +47,48 @@ class AidRequestController extends GetxController {
         if (newUserId == _lastSeenUserId) return;
         _lastSeenUserId = newUserId;
         _clearLocal();
+        _unsubscribeRealtime();
         loadRequests();
+        if (newUserId != null) _subscribeRealtime();
         break;
       case AuthChangeEvent.signedOut:
         _lastSeenUserId = null;
         _clearLocal();
+        _unsubscribeRealtime();
         break;
       default:
         break;
     }
+  }
+
+  /// Subscribes to all postgres_changes on `aid_requests`. We don't filter
+  /// the channel — the table's SELECT RLS policy already restricts events
+  /// to rows the current aid_worker can see (assigned_team_id IN their
+  /// org's teams), and reflecting a refresh on each delivered event is
+  /// the simplest correct behaviour. Refreshes are debounced 500 ms so
+  /// a burst of related row changes only triggers one re-fetch.
+  void _subscribeRealtime() {
+    _channel = SupabaseService.instance.client
+        .channel('aid_requests:assigned')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'aid_requests',
+          callback: (_) => _scheduleRefresh(),
+        )
+        .subscribe();
+  }
+
+  void _scheduleRefresh() {
+    _refreshDebounce?.cancel();
+    _refreshDebounce = Timer(const Duration(milliseconds: 500), loadRequests);
+  }
+
+  void _unsubscribeRealtime() {
+    final ch = _channel;
+    if (ch == null) return;
+    SupabaseService.instance.client.removeChannel(ch);
+    _channel = null;
   }
 
   void _clearLocal() {
