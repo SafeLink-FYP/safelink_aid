@@ -218,7 +218,7 @@ class AuthController extends GetxController {
 
       await _supabaseService.auth.resetPasswordForEmail(
         model.email,
-        redirectTo: 'safelinkgov://reset-password',
+        redirectTo: 'safelinkaid://reset-password',
       );
 
       DialogHelpers.hideLoadingDialog();
