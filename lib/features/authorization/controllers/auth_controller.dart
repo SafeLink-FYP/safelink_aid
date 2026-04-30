@@ -5,6 +5,7 @@ import 'package:safelink_aid/core/utilities/app_routes.dart';
 import 'package:safelink_aid/core/utilities/auth_middleware.dart';
 import 'package:safelink_aid/core/utilities/dialog_helpers.dart';
 import 'package:safelink_aid/features/authorization/models/auth_models.dart';
+import 'package:safelink_aid/features/authorization/utils/route_decision.dart';
 import 'package:safelink_aid/features/dashboard/controllers/aid_request_controller.dart';
 import 'package:safelink_aid/features/dashboard/controllers/dashboard_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -113,7 +114,13 @@ class AuthController extends GetxController {
     try {
       final user = _supabaseService.currentUser;
       if (user == null) {
-        Get.offAllNamed(AppRoutes.signInView);
+        Get.offAllNamed(decideAidRoute(
+          hasSession: false,
+          hasActiveMembership: false,
+          activeTeamApproved: null,
+          latestJoinRequestStatus: null,
+          hasPendingCreatedTeam: false,
+        ));
         return;
       }
 
@@ -124,8 +131,18 @@ class AuthController extends GetxController {
           .eq('is_active', true)
           .maybeSingle();
 
-      if (memberResponse == null) {
-        // No active team, check join requests
+      bool? activeTeamApproved;
+      String? latestJoinRequestStatus;
+      bool hasPendingCreatedTeam = false;
+
+      if (memberResponse != null) {
+        final teamId = memberResponse['team_id'];
+        final teamResponse = await _supabaseService.teams
+            .select('is_approved')
+            .eq('id', teamId)
+            .maybeSingle();
+        activeTeamApproved = teamResponse?['is_approved'] == true;
+      } else {
         final joinReq = await _supabaseService.client
             .from('team_join_requests')
             .select('status')
@@ -133,46 +150,35 @@ class AuthController extends GetxController {
             .order('created_at', ascending: false)
             .limit(1)
             .maybeSingle();
+        latestJoinRequestStatus = joinReq?['status'] as String?;
 
-        if (joinReq != null && joinReq['status'] == 'pending') {
-          Get.offAllNamed(AppRoutes.waitingApprovalView);
-          return;
+        if (latestJoinRequestStatus != 'pending') {
+          final pendingTeam = await _supabaseService.teams
+              .select('is_approved')
+              .eq('created_by', user.id)
+              .eq('is_approved', false)
+              .maybeSingle();
+          hasPendingCreatedTeam = pendingTeam != null;
         }
-
-        // Check if they created a pending team
-        final pendingTeam = await _supabaseService.teams
-            .select('is_approved')
-            .eq('created_by', user.id)
-            .eq('is_approved', false)
-            .maybeSingle();
-
-        if (pendingTeam != null) {
-          Get.offAllNamed(AppRoutes.waitingApprovalView);
-          return;
-        }
-
-        Get.offAllNamed(AppRoutes.teamSelectionView);
-        return;
       }
 
-      // Has active team mapping, check if team itself is approved
-      final teamId = memberResponse['team_id'];
-      final teamResponse = await _supabaseService.teams
-          .select('is_approved')
-          .eq('id', teamId)
-          .maybeSingle();
+      final route = decideAidRoute(
+        hasSession: true,
+        hasActiveMembership: memberResponse != null,
+        activeTeamApproved: activeTeamApproved,
+        latestJoinRequestStatus: latestJoinRequestStatus,
+        hasPendingCreatedTeam: hasPendingCreatedTeam,
+      );
 
-      if (teamResponse != null && teamResponse['is_approved'] == true) {
+      if (route == AppRoutes.mainDashboardView) {
         // Dashboard/AidRequest controllers are permanent and ran their initial
         // load at app-start, possibly before the user had an aid_worker_profile
         // or an active team. No auth event fires when those become true, so
         // refresh on entry to make sure the lists reflect the user's current
         // org scope.
         _refreshDashboardData();
-        Get.offAllNamed(AppRoutes.mainDashboardView);
-      } else {
-        Get.offAllNamed(AppRoutes.waitingApprovalView);
       }
+      Get.offAllNamed(route);
     } catch (e) {
       // Don't silently push to teamSelection on a transient failure — that
       // can drop a fully-onboarded user back into the team gate. Stay where
