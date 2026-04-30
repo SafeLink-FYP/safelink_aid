@@ -98,6 +98,10 @@ class AidWorkerProfileModel {
   final String designation;
   final String? department;
   final bool isTeamLead;
+  // 'available' | 'busy' | 'off_duty' — see availability_status enum
+  // added in step5 migration. Soft signal: gov dispatch sorts teams by
+  // available-member ratio but never gates dispatch on this flag.
+  final String availabilityStatus;
   final String? createdAt;
   final String? updatedAt;
 
@@ -107,6 +111,7 @@ class AidWorkerProfileModel {
     this.organizationId,
     this.department,
     this.isTeamLead = false,
+    this.availabilityStatus = 'available',
     this.createdAt,
     this.updatedAt,
   });
@@ -118,6 +123,8 @@ class AidWorkerProfileModel {
         designation: json['designation'] as String? ?? '',
         department: json['department'] as String?,
         isTeamLead: json['is_team_lead'] as bool? ?? false,
+        availabilityStatus:
+            json['availability_status'] as String? ?? 'available',
         createdAt: json['created_at'] as String?,
         updatedAt: json['updated_at'] as String?,
       );
@@ -128,18 +135,21 @@ class AidWorkerProfileModel {
     'designation': designation,
     'department': department,
     'is_team_lead': isTeamLead,
+    'availability_status': availabilityStatus,
   };
 
   AidWorkerProfileModel copyWith({
     String? designation,
     String? department,
     bool? isTeamLead,
+    String? availabilityStatus,
   }) => AidWorkerProfileModel(
     id: id,
     organizationId: organizationId,
     designation: designation ?? this.designation,
     department: department ?? this.department,
     isTeamLead: isTeamLead ?? this.isTeamLead,
+    availabilityStatus: availabilityStatus ?? this.availabilityStatus,
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

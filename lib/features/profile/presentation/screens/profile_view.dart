@@ -10,6 +10,7 @@ import 'package:safelink_aid/features/dashboard/presentation/widgets/contact_inf
 import 'package:safelink_aid/features/dashboard/presentation/widgets/resource_summary_item.dart';
 import 'package:safelink_aid/features/dashboard/presentation/widgets/settings.dart';
 import 'package:safelink_aid/features/profile/controllers/profile_controller.dart';
+import 'package:safelink_aid/features/profile/presentation/widgets/availability_toggle.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -206,6 +207,8 @@ class ProfileView extends StatelessWidget {
                             ),
                           ],
                         )),
+                        SizedBox(height: 25.h),
+                        const AvailabilityToggle(),
                         SizedBox(height: 25.h),
                         Text(
                           'Worker Information',

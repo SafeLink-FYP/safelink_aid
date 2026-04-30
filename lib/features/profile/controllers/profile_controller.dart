@@ -136,5 +136,35 @@ class ProfileController extends GetxController {
 
   String? get avatarUrl => profile.value?.avatarUrl;
 
+  /// 'available' | 'busy' | 'off_duty' — defaults to 'available' when
+  /// the row hasn't loaded yet so the segmented toggle shows a stable
+  /// default selection.
+  String get availabilityStatus =>
+      aidProfile.value?.availabilityStatus ?? 'available';
+
+  /// Updates aid_worker_profiles.availability_status. Optimistically
+  /// patches the local Rxn so the toggle UI reflects the new state
+  /// immediately; reverts and surfaces a snackbar on failure.
+  Future<void> setAvailabilityStatus(String status) async {
+    if (status != 'available' && status != 'busy' && status != 'off_duty') {
+      return; // ignore garbage values
+    }
+    final current = aidProfile.value;
+    if (current == null || current.availabilityStatus == status) return;
+
+    aidProfile.value = current.copyWith(availabilityStatus: status);
+    try {
+      final updated = await _profileService.updateAidWorkerProfile({
+        'availability_status': status,
+      });
+      if (updated != null) aidProfile.value = updated;
+    } catch (e) {
+      // Roll back on failure.
+      aidProfile.value = current;
+      Get.log('Error updating availability_status: $e');
+      Get.snackbar('Error', "Couldn't update your availability. Try again.");
+    }
+  }
+
   Future<void> refreshProfile() => loadProfile();
 }
