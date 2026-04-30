@@ -16,6 +16,10 @@ class CaseCard extends StatelessWidget {
         return AppTheme.red;
       case 'high':
         return AppTheme.orange;
+      case 'medium':
+        return AppTheme.amber;
+      case 'low':
+        return AppTheme.green;
       default:
         return AppTheme.primaryColor;
     }
@@ -27,6 +31,10 @@ class CaseCard extends StatelessWidget {
         return AppTheme.lightRed;
       case 'high':
         return AppTheme.lightOrange;
+      case 'medium':
+        return AppTheme.lightAmber;
+      case 'low':
+        return AppTheme.lightGreen;
       default:
         return AppTheme.primaryColor.withValues(alpha: 0.08);
     }

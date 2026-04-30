@@ -28,6 +28,9 @@ class AppTheme {
   static const Color lightRed = Color(0xFFFEF2F2);
   static const Color orange = Color(0xFFE17100);
   static const Color lightOrange = Color(0xFFFFFBEB);
+  static const Color amber = Color(0xFFFFC107);
+  static const Color lightAmber = Color(0xFFFEFCE8);
+  static const Color lightGreen = Color(0xFFECFDF5);
   static const Color purple = Color(0xFF9810FA);
 
   static LinearGradient primaryGradient = const LinearGradient(
