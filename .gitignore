@@ -48,6 +48,15 @@ app.*.map.json
 # Claude Code settings
 /.claude/
 
-# Maps API key storage — contains MAPS_API_KEY, never commit.
+# Maps API key storage — never commit. See android/key.properties.example.
 /android/local.properties
+/android/key.properties
 /ios/Config/Secrets.xcconfig
+
+# Schema lives in the project-root supabase/ folder, not per-app.
+# Block accidental re-adds from `supabase init` / `supabase link` invoked here.
+/supabase/
+
+# Flutter command logs (e.g. flutter_01.log) — *.log already covers these,
+# this rule is defense-in-depth for files anchored at app root.
+/flutter_*.log

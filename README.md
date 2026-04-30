@@ -15,6 +15,13 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
+## Backend schema
+
+This app consumes Supabase at runtime (auth + Postgres). The canonical schema
+and migrations live in a separate repo / project-root `supabase/` folder, not
+in this repo. Run `supabase` CLI commands (`supabase migration new`,
+`supabase db reset`, `supabase db diff`) from the schema folder, not from here.
+
 ## Maps setup
 
 The request detail screen embeds a Google Map showing the assigned case's
@@ -23,11 +30,18 @@ provides it locally.
 
 ### Android
 
-1. Open `android/local.properties` (gitignored).
-2. Add the line:
+1. Copy the template:
 
    ```
-   MAPS_API_KEY=YOUR_ANDROID_KEY
+   cp android/key.properties.example android/key.properties
+   ```
+
+   `android/key.properties` is gitignored.
+
+2. Edit it and replace the placeholder with your key:
+
+   ```
+   MAPS_API_KEY=AIzaSy...
    ```
 
 3. Rebuild. The key is read by `android/app/build.gradle.kts` and injected

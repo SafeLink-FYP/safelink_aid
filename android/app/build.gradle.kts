@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,19 +8,14 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Extract the Maps API key from lib/core/secrets/app_secrets.dart so the
-// secret lives in one (gitignored) place. Compile-time read only — falls back
-// to empty when the file or constant is missing so the build never crashes.
-val appSecretsFile =
-    rootProject.file("../lib/core/secrets/app_secrets.dart")
-val mapsApiKey: String = if (appSecretsFile.exists()) {
-    Regex("""mapsApiKey\s*=\s*['"]([^'"]*)['"]""")
-        .find(appSecretsFile.readText())
-        ?.groupValues?.get(1)
-        ?: ""
-} else {
-    ""
+// Maps API key — read from android/key.properties (gitignored). Falls back to
+// empty so the build still succeeds when the file is missing; map surfaces
+// will fail to render at runtime in that case.
+val mapsKeyProps = Properties().apply {
+    val keyFile = rootProject.file("key.properties")
+    if (keyFile.exists()) FileInputStream(keyFile).use { load(it) }
 }
+val mapsApiKey: String = mapsKeyProps.getProperty("MAPS_API_KEY", "")
 
 android {
     namespace = "com.example.safelink_aid"
