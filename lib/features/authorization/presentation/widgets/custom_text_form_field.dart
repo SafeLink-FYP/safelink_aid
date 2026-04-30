@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:safelink_aid/core/themes/app_theme.dart';
 
 class CustomTextFormField extends StatefulWidget {
@@ -8,6 +7,7 @@ class CustomTextFormField extends StatefulWidget {
   final String hintText;
   final IconData icon;
   final bool isPassword;
+  final TextInputType? keyboardType;
   final TextEditingController controller;
   final void Function(String)? onChanged;
   final String? Function(String?)? validator;
@@ -17,6 +17,7 @@ class CustomTextFormField extends StatefulWidget {
     required this.label,
     required this.hintText,
     required this.icon,
+    this.keyboardType,
     this.isPassword = false,
     required this.controller,
     this.validator,
@@ -38,7 +39,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Get.theme;
+    final theme = Theme.of(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,6 +47,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         Text(widget.label, style: theme.textTheme.headlineMedium),
         SizedBox(height: 10.h),
         TextFormField(
+          keyboardType: widget.keyboardType,
           controller: widget.controller,
           validator: widget.validator,
           onChanged: widget.onChanged,
@@ -59,15 +61,15 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             ),
             suffixIcon: widget.isPassword
                 ? IconButton(
-              icon: Icon(
-                _obscureText ? Icons.visibility_off : Icons.visibility,
-                size: 20.sp,
-                color: AppTheme.hintTextColor,
-              ),
-              onPressed: () => setState(() {
-                _obscureText = !_obscureText;
-              }),
-            )
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                      size: 20.sp,
+                      color: AppTheme.hintTextColor,
+                    ),
+                    onPressed: () => setState(() {
+                      _obscureText = !_obscureText;
+                    }),
+                  )
                 : null,
           ),
           style: theme.textTheme.headlineMedium,

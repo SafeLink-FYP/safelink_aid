@@ -113,17 +113,17 @@ class AppTheme {
       ),
 
       labelLarge: GoogleFonts.roboto(
-        fontSize: 30.sp,
+        fontSize: 18.sp,
         fontWeight: FontWeight.w500,
         color: lightTextColor,
       ),
       labelMedium: GoogleFonts.roboto(
-        fontSize: 24.sp,
+        fontSize: 16.sp,
         fontWeight: FontWeight.w500,
         color: lightTextColor,
       ),
       labelSmall: GoogleFonts.roboto(
-        fontSize: 18.sp,
+        fontSize: 14.sp,
         fontWeight: FontWeight.w500,
         color: lightTextColor,
       ),

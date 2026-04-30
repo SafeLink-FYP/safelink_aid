@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:safelink_aid/core/constants/app_assets.dart';
 import 'package:safelink_aid/core/themes/app_theme.dart';
+import 'package:safelink_aid/core/utilities/app_routes.dart';
 import 'package:safelink_aid/core/utilities/validators.dart';
 import 'package:safelink_aid/features/authorization/controllers/auth_controller.dart';
 import 'package:safelink_aid/features/authorization/controllers/image_picking_controller.dart';
@@ -15,7 +16,6 @@ import 'package:safelink_aid/features/authorization/controllers/sign_up_page_con
 import 'package:safelink_aid/features/authorization/models/auth_models.dart';
 import 'package:safelink_aid/features/authorization/presentation/widgets/custom_text_form_field.dart';
 import 'package:safelink_aid/features/authorization/presentation/widgets/date_picker_text_field.dart';
-import 'package:safelink_aid/features/authorization/presentation/widgets/social_button.dart';
 
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});
@@ -25,104 +25,112 @@ class SignUpView extends StatefulWidget {
 }
 
 class _SignUpViewState extends State<SignUpView> {
-  final _formKey = GlobalKey<FormState>();
+  // One form key per step — prevents cross-page validation interference
+  final _step0Key = GlobalKey<FormState>();
+  final _step1Key = GlobalKey<FormState>();
+  final _step2Key = GlobalKey<FormState>();
+  final _step3Key = GlobalKey<FormState>();
+
   final AuthController _authController = Get.find<AuthController>();
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _cnicController = TextEditingController();
-  final TextEditingController _organizationController = TextEditingController();
-  final TextEditingController _designationController = TextEditingController();
-  final TextEditingController _dobController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-  TextEditingController();
   final ImagePickingController _imagePickingController = Get.put(
     ImagePickingController(),
   );
-  final SignUpPageController _signUpPageController = Get.put(
-    SignUpPageController(),
-  );
+  final SignUpPageController _pageController = Get.put(SignUpPageController());
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _cnicController = TextEditingController();
+  final TextEditingController _dobController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  // ISO date stored separately; the text field shows the display-friendly format
+  String? _selectedDobIso;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
     _emailController.dispose();
+    _fullNameController.dispose();
     _phoneController.dispose();
     _cnicController.dispose();
-    _organizationController.dispose();
-    _designationController.dispose();
     _dobController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _imagePickingController.dispose();
-    _signUpPageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Get.theme;
     return Scaffold(
       body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: Flexible(
-            child: PageView.builder(
-              itemCount: 4,
-              physics: NeverScrollableScrollPhysics(),
-              controller: _signUpPageController.pageController,
-              onPageChanged: (value) =>
-              _signUpPageController.currentPage.value = value,
-              itemBuilder: (context, index) {
-                Widget page;
-                switch (index) {
-                  case 0:
-                    page = _buildEmailStep(theme);
-                    break;
-                  case 1:
-                    page = _buildDetailsStep(theme);
-                    break;
-                  case 2:
-                    page = _buildPasswordStep(theme);
-                    break;
-                  case 3:
-                    page = _buildProfilePictureStep(theme);
-                    break;
-                  default:
-                    page = SizedBox.shrink();
-                    break;
-                }
-                return SingleChildScrollView(
-                  physics: BouncingScrollPhysics(),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 40.w,
-                    vertical: 20.h,
-                  ),
-                  child: Column(
-                    children: [
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: IconButton(
+        child: PageView.builder(
+          itemCount: 4,
+          physics: const NeverScrollableScrollPhysics(),
+          controller: _pageController.pageController,
+          onPageChanged: (v) => _pageController.currentPage.value = v,
+          itemBuilder: (context, index) {
+            final formKeys = [_step0Key, _step1Key, _step2Key, _step3Key];
+            final Widget content;
+            final theme = Get.theme;
+
+            switch (index) {
+              case 0:
+                content = _buildEmailStep(theme);
+                break;
+              case 1:
+                content = _buildDetailsStep(theme);
+                break;
+              case 2:
+                content = _buildPasswordStep(theme);
+                break;
+              case 3:
+                content = _buildProfilePictureStep(theme);
+                break;
+              default:
+                content = const SizedBox.shrink();
+            }
+
+            return Form(
+              key: formKeys[index],
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 20.h),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        IconButton(
                           icon: const Icon(Icons.arrow_back_ios),
-                          onPressed: () => _signUpPageController.previousPage(),
+                          onPressed: () => _pageController.previousPage(),
                         ),
-                      ),
-                      SizedBox(height: 20.h),
-                      page,
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
+                        _buildStepIndicator(theme, index, 4),
+                        SizedBox(width: 48.w),
+                      ],
+                    ),
+                    SizedBox(height: 20.h),
+                    content,
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 0 — Email
+  // ─────────────────────────────────────────────────────────────────────────
   Widget _buildEmailStep(ThemeData theme) {
     return Column(
       children: [
@@ -142,74 +150,29 @@ class _SignUpViewState extends State<SignUpView> {
           label: 'Email',
           hintText: 'Enter your email',
           controller: _emailController,
-          validator: (value) => Validators.validateEmail(value),
+          validator: Validators.validateEmail,
           icon: CupertinoIcons.envelope,
         ),
         SizedBox(height: 30.h),
         CustomElevatedButton(
           label: 'Continue',
           onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              _signUpPageController.nextPage();
+            if (_step0Key.currentState!.validate()) {
+              _pageController.nextPage();
             }
           },
-        ),
-        SizedBox(height: 30.h),
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: 0.5,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.grey[900]!,
-                      Colors.grey[100]!,
-                      Colors.grey[900]!,
-                    ],
-                    stops: const [0.0, 0.5, 1.0],
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 25.w),
-              child: Text('OR', style: theme.textTheme.bodyLarge),
-            ),
-            Expanded(
-              child: Container(
-                height: 0.5,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.grey[900]!,
-                      Colors.grey[100]!,
-                      Colors.grey[900]!,
-                    ],
-                    stops: const [0.0, 0.5, 1.0],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 30.h),
-        SocialButton(
-          label: 'Continue with Google',
-          icon: AppAssets.googleIcon,
-          onPressed: () => _authController.signInWithGoogle(),
         ),
         SizedBox(height: 30.h),
         RichText(
           text: TextSpan(
             style: theme.textTheme.bodyLarge,
             children: [
-              TextSpan(text: "Already have an account? "),
+              const TextSpan(text: 'Already have an account? '),
               TextSpan(
                 text: 'Sign In',
                 style: theme.textTheme.displayLarge,
                 recognizer: TapGestureRecognizer()
-                  ..onTap = () => Get.offAndToNamed('signInView'),
+                  ..onTap = () => Get.offAllNamed(AppRoutes.signInView),
               ),
             ],
           ),
@@ -218,6 +181,9 @@ class _SignUpViewState extends State<SignUpView> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 1 — Personal details
+  // ─────────────────────────────────────────────────────────────────────────
   Widget _buildDetailsStep(ThemeData theme) {
     return Column(
       children: [
@@ -228,24 +194,16 @@ class _SignUpViewState extends State<SignUpView> {
         ),
         SizedBox(height: 15.h),
         Text(
-          'Help us personalize your experience',
+          'Help us personalise your experience.',
           style: theme.textTheme.bodyMedium,
           textAlign: TextAlign.center,
         ),
         SizedBox(height: 30.h),
         CustomTextFormField(
-          label: 'First Name',
-          hintText: 'First name',
-          controller: _firstNameController,
-          validator: (value) => Validators.validateName(value),
-          icon: CupertinoIcons.person,
-        ),
-        SizedBox(height: 20.h),
-        CustomTextFormField(
-          label: 'Last Name',
-          hintText: 'Last name',
-          controller: _lastNameController,
-          validator: (value) => Validators.validateName(value),
+          label: 'Full Name',
+          hintText: 'Enter your full name',
+          controller: _fullNameController,
+          validator: Validators.validateName,
           icon: CupertinoIcons.person,
         ),
         SizedBox(height: 20.h),
@@ -253,23 +211,15 @@ class _SignUpViewState extends State<SignUpView> {
           label: 'Phone (Optional)',
           hintText: 'Enter phone number',
           controller: _phoneController,
-          validator: (value) => Validators.validatePhoneNumber(value),
+          validator: Validators.validatePhoneNumber,
           icon: CupertinoIcons.phone,
         ),
         SizedBox(height: 20.h),
         CustomTextFormField(
           label: 'CNIC',
-          hintText: 'Enter CNIC',
+          hintText: 'Enter CNIC (xxxxx-xxxxxxx-x)',
           controller: _cnicController,
-          validator: (value) => Validators.validateCNIC(value),
-          icon: CupertinoIcons.creditcard,
-        ),
-        SizedBox(height: 20.h),
-        CustomTextFormField(
-          label: 'Designation',
-          hintText: 'Enter designation',
-          controller: _cnicController,
-          validator: (value) => Validators.validateName(value),
+          validator: Validators.validateCNIC,
           icon: CupertinoIcons.creditcard,
         ),
         SizedBox(height: 20.h),
@@ -278,26 +228,30 @@ class _SignUpViewState extends State<SignUpView> {
           hintText: 'Select Date of Birth',
           icon: Icons.calendar_month,
           controller: _dobController,
-          validator: (value) => Validators.validateDOB(value),
+          validator: Validators.validateDOB,
+          onDateSelected: (iso) => _selectedDobIso = iso,
         ),
         SizedBox(height: 30.h),
         CustomElevatedButton(
           label: 'Continue',
           onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              _signUpPageController.nextPage();
+            if (_step1Key.currentState!.validate()) {
+              _pageController.nextPage();
             }
           },
         ),
         SizedBox(height: 10.h),
         TextButton(
-          onPressed: () => _signUpPageController.previousPage(),
+          onPressed: () => _pageController.previousPage(),
           child: Text('Go Back', style: theme.textTheme.bodyMedium),
         ),
       ],
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 2 — Password
+  // ─────────────────────────────────────────────────────────────────────────
   Widget _buildPasswordStep(ThemeData theme) {
     return Column(
       children: [
@@ -308,7 +262,7 @@ class _SignUpViewState extends State<SignUpView> {
         ),
         SizedBox(height: 15.h),
         Text(
-          'Make it strong and memorable',
+          'Make it strong and memorable.',
           style: theme.textTheme.bodyMedium,
           textAlign: TextAlign.center,
         ),
@@ -319,8 +273,8 @@ class _SignUpViewState extends State<SignUpView> {
           isPassword: true,
           icon: CupertinoIcons.lock,
           controller: _passwordController,
-          validator: (value) => Validators.validatePassword(value),
-          onChanged: _signUpPageController.onPasswordChanged,
+          validator: Validators.validatePassword,
+          onChanged: _pageController.onPasswordChanged,
         ),
         SizedBox(height: 20.h),
         CustomTextFormField(
@@ -329,10 +283,8 @@ class _SignUpViewState extends State<SignUpView> {
           isPassword: true,
           icon: CupertinoIcons.lock,
           controller: _confirmPasswordController,
-          validator: (value) => Validators.validateConfirmPassword(
-            value,
-            _passwordController.text,
-          ),
+          validator: (v) =>
+              Validators.validateConfirmPassword(v, _passwordController.text),
         ),
         SizedBox(height: 20.h),
         Container(
@@ -346,25 +298,21 @@ class _SignUpViewState extends State<SignUpView> {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text(
                 'Password must contain:',
                 style: theme.textTheme.headlineMedium,
               ),
               SizedBox(height: 10.h),
-              _buildPasswordRuleRow(
+              _buildPasswordRule(
                 'At least 8 characters',
-                _signUpPageController.hasMinLength,
+                _pageController.hasMinLength,
               ),
-              _buildPasswordRuleRow(
+              _buildPasswordRule(
                 'One uppercase letter',
-                _signUpPageController.hasUppercase,
+                _pageController.hasUppercase,
               ),
-              _buildPasswordRuleRow(
-                'One number',
-                _signUpPageController.hasNumber,
-              ),
+              _buildPasswordRule('One number', _pageController.hasNumber),
             ],
           ),
         ),
@@ -372,34 +320,31 @@ class _SignUpViewState extends State<SignUpView> {
         CustomElevatedButton(
           label: 'Continue',
           onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              _signUpPageController.nextPage();
+            if (_step2Key.currentState!.validate()) {
+              _pageController.nextPage();
             }
           },
         ),
         SizedBox(height: 10.h),
         TextButton(
-          onPressed: () => _signUpPageController.previousPage(),
+          onPressed: () => _pageController.previousPage(),
           child: Text('Go Back', style: theme.textTheme.bodyMedium),
         ),
       ],
     );
   }
 
-  Widget _buildPasswordRuleRow(String label, RxBool isValid) {
+  Widget _buildPasswordRule(String label, RxBool isValid) {
     final theme = Get.theme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Obx(
-              () => Checkbox(
+          () => Checkbox(
             value: isValid.value,
             onChanged: null,
             checkColor: AppTheme.white,
             fillColor: WidgetStateProperty.resolveWith<Color>((states) {
-              if (states.contains(WidgetState.disabled)) {
-                return isValid.value ? AppTheme.green : Colors.grey.shade400;
-              }
               return isValid.value ? AppTheme.green : Colors.grey.shade400;
             }),
             side: BorderSide(
@@ -422,19 +367,14 @@ class _SignUpViewState extends State<SignUpView> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 3 — Profile picture (optional)
+  // ─────────────────────────────────────────────────────────────────────────
   Widget _buildProfilePictureStep(ThemeData theme) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Align(
-          alignment: Alignment.topLeft,
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back_ios),
-            onPressed: () => Get.back(),
-          ),
-        ),
-        SizedBox(height: 30.h),
         Text(
           'Add a profile picture',
           style: theme.textTheme.titleLarge,
@@ -442,7 +382,7 @@ class _SignUpViewState extends State<SignUpView> {
         ),
         SizedBox(height: 15.h),
         Text(
-          'Optional: Add a photo to make your profile more personal.',
+          'Optional — add a photo to make your profile more personal.',
           style: theme.textTheme.bodyMedium,
           textAlign: TextAlign.center,
         ),
@@ -469,25 +409,25 @@ class _SignUpViewState extends State<SignUpView> {
                 child: image != null
                     ? Image.file(File(image.path), fit: BoxFit.fill)
                     : Container(
-                  padding: EdgeInsets.all(50.r),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: AppTheme.primaryGradient,
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.primaryColor.withValues(alpha: 0.30),
-                        offset: const Offset(0, 25),
-                        blurRadius: 50.r,
-                        spreadRadius: -12.r,
+                        padding: EdgeInsets.all(50.r),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: AppTheme.primaryGradient,
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.primaryColor.withValues(alpha: 0.30),
+                              offset: const Offset(0, 25),
+                              blurRadius: 50.r,
+                              spreadRadius: -12.r,
+                            ),
+                          ],
+                        ),
+                        child: SvgPicture.asset(
+                          AppAssets.cameraIcon,
+                          width: 50.w,
+                          height: 50.h,
+                        ),
                       ),
-                    ],
-                  ),
-                  child: SvgPicture.asset(
-                    AppAssets.cameraIcon,
-                    width: 50.w,
-                    height: 50.h,
-                  ),
-                ),
               ),
               if (image != null)
                 Positioned(
@@ -495,11 +435,11 @@ class _SignUpViewState extends State<SignUpView> {
                   right: 10.w,
                   child: InkWell(
                     onTap: () =>
-                    _imagePickingController.selectedImage.value = null,
+                        _imagePickingController.selectedImage.value = null,
                     borderRadius: BorderRadius.circular(20.r),
                     child: Container(
                       padding: EdgeInsets.all(5.r),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppTheme.red,
                         shape: BoxShape.circle,
                       ),
@@ -530,7 +470,6 @@ class _SignUpViewState extends State<SignUpView> {
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SvgPicture.asset(
                   AppAssets.uploadIcon,
@@ -547,34 +486,57 @@ class _SignUpViewState extends State<SignUpView> {
         ),
         SizedBox(height: 20.h),
         Text(
-          'Recommended: Square image, at least 400x400px',
+          'Recommended: square image, at least 400×400 px',
           style: theme.textTheme.bodySmall,
         ),
         SizedBox(height: 30.h),
-        CustomElevatedButton(
-          label: 'Complete Registration',
-          onPressed: () => _authController.signUp(
-            SignUpModel(
-              firstName: _firstNameController.text.trim(),
-              lastName: _lastNameController.text.trim(),
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-              phone: _phoneController.text.trim(),
-              cnic: _cnicController.text.trim(),
-              dateOfBirth: _dobController.text.trim(),
-              profilePicture:
-              _imagePickingController.selectedImage.value != null
-                  ? File(_imagePickingController.selectedImage.value!.path)
-                  : null,
-            ),
-          ),
-        ),
+        Obx(() => CustomElevatedButton(
+              label: 'Complete Registration',
+              isLoading: _authController.isLoading.value,
+              onPressed: _submitRegistration,
+            )),
         SizedBox(height: 10.h),
         TextButton(
-          onPressed: () => _signUpPageController.previousPage(),
+          onPressed: () => _pageController.previousPage(),
           child: Text('Go Back', style: theme.textTheme.bodyMedium),
         ),
       ],
+    );
+  }
+
+  Widget _buildStepIndicator(ThemeData theme, int currentIndex, int total) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(total, (i) {
+        final active = i == currentIndex;
+        return Container(
+          width: active ? 18.w : 8.w,
+          height: 8.h,
+          margin: EdgeInsets.symmetric(horizontal: 3.w),
+          decoration: BoxDecoration(
+            color: active ? theme.primaryColor : theme.dividerColor,
+            borderRadius: BorderRadius.circular(50.r),
+          ),
+        );
+      }),
+    );
+  }
+
+  void _submitRegistration() {
+    _authController.signUp(
+      SignUpModel(
+        fullName: _fullNameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        cnic: _cnicController.text.trim(),
+        dateOfBirth: _selectedDobIso ?? _dobController.text.trim(),
+        phone: _phoneController.text.trim().isEmpty
+            ? null
+            : _phoneController.text.trim(),
+        profilePicture: _imagePickingController.selectedImage.value != null
+            ? File(_imagePickingController.selectedImage.value!.path)
+            : null,
+      ),
     );
   }
 }

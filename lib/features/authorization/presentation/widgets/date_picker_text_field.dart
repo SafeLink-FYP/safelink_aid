@@ -11,6 +11,15 @@ class DatePickerTextField extends StatelessWidget {
   final IconData icon;
   final TextEditingController controller;
   final String? Function(String?)? validator;
+
+  /// Called with the ISO-8601 date string (YYYY-MM-DD) when the user picks a date.
+  /// Use this value when sending the date to the backend.
+  final void Function(String isoDate)? onDateSelected;
+
+  /// Initial date the picker opens on. Defaults to ~25 years ago, which is
+  /// a sane DOB landing point. Override for non-DOB use cases.
+  final DateTime? defaultDate;
+
   const DatePickerTextField({
     super.key,
     required this.label,
@@ -21,15 +30,20 @@ class DatePickerTextField extends StatelessWidget {
     required this.icon,
     this.iconColor,
     this.validator,
+    this.onDateSelected,
+    this.defaultDate,
   });
 
   Future<void> _selectDate(BuildContext context) async {
     final theme = Get.theme;
-    DateTime? pickedDate = await showDatePicker(
+    final now = DateTime.now();
+    final initial = defaultDate ??
+        DateTime(now.year - 25, now.month, now.day);
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: initial,
       firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
+      lastDate: now,
       helpText: 'Select Date',
       builder: (context, child) {
         return Theme(
@@ -47,28 +61,35 @@ class DatePickerTextField extends StatelessWidget {
         );
       },
     );
+
     if (pickedDate != null) {
+      // Display-friendly format kept in the visible text field
       controller.text =
-      "${pickedDate.day} ${_getMonthName(pickedDate.month)}, ${pickedDate.year}";
+          '${pickedDate.day} ${_monthName(pickedDate.month)}, ${pickedDate.year}';
+
+      // ISO 8601 format for backend storage
+      final iso =
+          '${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}';
+      onDateSelected?.call(iso);
     }
   }
 
-  String _getMonthName(int month) {
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
+  String _monthName(int month) {
+    const names = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
-    return monthNames[month - 1];
+    return names[month - 1];
   }
 
   @override

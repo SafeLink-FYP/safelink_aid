@@ -47,3 +47,7 @@ app.*.map.json
 
 # Claude Code settings
 /.claude/
+
+# Maps API key storage — contains MAPS_API_KEY, never commit.
+/android/local.properties
+/ios/Config/Secrets.xcconfig

@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:safelink_aid/core/services/cache_service.dart';
+import 'package:safelink_aid/core/utilities/app_routes.dart';
 
 class OnboardingNavigationController extends GetxController {
   final PageController pageController = PageController();
@@ -7,16 +9,25 @@ class OnboardingNavigationController extends GetxController {
 
   void nextPage() {
     if (currentPage.value == 2) {
-      Get.offAllNamed('signInView');
+      _complete();
     } else {
       pageController.nextPage(
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     }
   }
 
-  void skip() {
-    Get.offAllNamed('signInView');
+  void skip() => _complete();
+
+  Future<void> _complete() async {
+    await CacheService.instance.setOnboardingComplete();
+    Get.offAllNamed(AppRoutes.signInView);
+  }
+
+  @override
+  void onClose() {
+    pageController.dispose();
+    super.onClose();
   }
 }

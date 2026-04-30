@@ -12,7 +12,7 @@ class CustomBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Get.theme;
-    final NavigationController navController = Get.put(NavigationController());
+    final NavigationController navController = Get.find<NavigationController>();
     return Container(
       decoration: BoxDecoration(
         color: theme.cardColor,

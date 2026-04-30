@@ -96,15 +96,13 @@ class Validators {
 
   // DATE OF BIRTH VALIDATION
   static String? validateDOB(String? dateOfBirth) {
-    if (dateOfBirth == null || dateOfBirth.isEmpty) {
+    if (dateOfBirth == null || dateOfBirth.trim().isEmpty) {
       return 'Please enter your date of birth';
     }
 
-    final parts = dateOfBirth.split(' ');
-    final day = int.parse(parts[0]);
-    final monthStr = parts[1].replaceAll(',', '');
-    final year = int.parse(parts[2]);
-
+    // Expected display format: "12 Mar, 2025" — produced by DatePickerTextField.
+    // Be defensive: bad formats from outside that flow must produce a friendly
+    // error rather than throw.
     const monthNames = [
       "Jan",
       "Feb",
@@ -119,17 +117,34 @@ class Validators {
       "Nov",
       "Dec",
     ];
-    final month = monthNames.indexOf(monthStr) + 1;
-    final dob = DateTime(year, month, day);
+
+    final DateTime dob;
+    try {
+      final parts = dateOfBirth.trim().split(' ');
+      if (parts.length != 3) return 'Please enter a valid date of birth';
+
+      final day = int.tryParse(parts[0]);
+      if (day == null) return 'Please enter a valid date of birth';
+
+      final monthStr = parts[1].replaceAll(',', '');
+      final monthIdx = monthNames.indexOf(monthStr);
+      if (monthIdx < 0) return 'Please enter a valid date of birth';
+
+      final year = int.tryParse(parts[2]);
+      if (year == null) return 'Please enter a valid date of birth';
+
+      dob = DateTime(year, monthIdx + 1, day);
+    } catch (_) {
+      return 'Please enter a valid date of birth';
+    }
 
     final today = DateTime.now();
-    final age =
-        today.year -
-            dob.year -
-            ((today.month < dob.month ||
+    final age = today.year -
+        dob.year -
+        ((today.month < dob.month ||
                 (today.month == dob.month && today.day < dob.day))
-                ? 1
-                : 0);
+            ? 1
+            : 0);
 
     if (dob.isAfter(today)) {
       return 'Date of birth cannot be in the future';

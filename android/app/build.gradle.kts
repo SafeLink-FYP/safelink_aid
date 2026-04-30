@@ -5,6 +5,20 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Extract the Maps API key from lib/core/secrets/app_secrets.dart so the
+// secret lives in one (gitignored) place. Compile-time read only — falls back
+// to empty when the file or constant is missing so the build never crashes.
+val appSecretsFile =
+    rootProject.file("../lib/core/secrets/app_secrets.dart")
+val mapsApiKey: String = if (appSecretsFile.exists()) {
+    Regex("""mapsApiKey\s*=\s*['"]([^'"]*)['"]""")
+        .find(appSecretsFile.readText())
+        ?.groupValues?.get(1)
+        ?: ""
+} else {
+    ""
+}
+
 android {
     namespace = "com.example.safelink_aid"
     compileSdk = flutter.compileSdkVersion
@@ -15,8 +29,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        }
     }
 
     defaultConfig {
@@ -28,6 +44,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {

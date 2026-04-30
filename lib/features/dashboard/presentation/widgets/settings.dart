@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:safelink_aid/core/constants/app_assets.dart';
 import 'package:safelink_aid/core/themes/app_theme.dart';
+import 'package:safelink_aid/core/utilities/app_routes.dart';
 import 'package:safelink_aid/features/dashboard/presentation/widgets/theme_toggle.dart';
 
 class Settings extends StatelessWidget {
@@ -20,93 +21,79 @@ class Settings extends StatelessWidget {
         border: Border.all(color: theme.dividerColor, width: 1.w),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.transparentColor.withValues(alpha: 0.10),
-            offset: const Offset(0, 1),
-            blurRadius: 3.r,
-            spreadRadius: 0.r,
-          ),
-          BoxShadow(
-            color: AppTheme.transparentColor.withValues(alpha: 0.10),
-            offset: const Offset(0, 1),
-            blurRadius: 2.r,
-            spreadRadius: -1.r,
+            color: AppTheme.black.withValues(alpha: 0.04),
+            offset: const Offset(0, 2),
+            blurRadius: 8.r,
           ),
         ],
       ),
       child: Column(
         children: [
-          _buildSettingTile(
-            label: 'Organization Settings',
-            leadingIcon: AppAssets.settingsIcon,
-            trailing: Icon(Icons.arrow_forward_ios, size: 15.sp),
-            context: context,
+          _buildTile(
+            theme: theme,
+            label: 'Edit Profile',
+            icon: AppAssets.personIcon,
+            gradient: AppTheme.primaryGradient,
+            trailing: Icon(Icons.arrow_forward_ios, size: 15.sp, color: theme.hintColor),
+            onTap: () => Get.toNamed(AppRoutes.editProfileView),
           ),
-          _buildDivider(context: context),
-          _buildSettingTile(
-            label: 'Manage Teams',
-            leadingIcon: AppAssets.teamIcon,
-            trailing: Icon(Icons.arrow_forward_ios, size: 15.sp),
-            context: context,
-          ),
-          _buildDivider(context: context),
-          _buildSettingTile(
-            label: 'Manage Teams',
-            leadingIcon: AppAssets.teamIcon,
-            trailing: ThemeToggle(),
-            context: context,
+          _buildDivider(),
+          _buildTile(
+            theme: theme,
+            label: 'Dark Mode',
+            icon: AppAssets.settingsIcon,
+            gradient: AppTheme.purpleGradient,
+            trailing: const ThemeToggle(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSettingTile({
+  Widget _buildTile({
+    required ThemeData theme,
     required String label,
-    required String leadingIcon,
+    required String icon,
+    required Gradient gradient,
     required Widget trailing,
-    required BuildContext context,
+    VoidCallback? onTap,
   }) {
-    final theme = Get.theme;
-    return Row(
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 25.h, horizontal: 15.w),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: AppTheme.primaryGradient,
-          ),
-          child: SvgPicture.asset(
-            leadingIcon,
-            width: 20.w,
-            height: 20.h,
-            colorFilter: ColorFilter.mode(AppTheme.white, BlendMode.srcIn),
-          ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 6.h),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(10.r),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: gradient,
+              ),
+              child: SvgPicture.asset(
+                icon,
+                width: 16.w,
+                height: 16.h,
+                colorFilter:
+                    const ColorFilter.mode(AppTheme.white, BlendMode.srcIn),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Text(label, style: theme.textTheme.headlineMedium),
+            const Spacer(),
+            trailing,
+          ],
         ),
-        SizedBox(width: 10.w),
-        Text(label, style: theme.textTheme.headlineMedium),
-        Spacer(),
-        trailing,
-      ],
+      ),
     );
   }
 
-  Widget _buildDivider({required BuildContext context}) {
-    final theme = Get.theme;
+  Widget _buildDivider() {
     return Container(
       height: 1,
-      margin: EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            Colors.grey.shade400,
-            Colors.grey.shade200,
-            Colors.grey.shade400,
-          ],
-          stops: const [0.0, 0.5, 1.0],
-        ),
-      ),
+      margin: EdgeInsets.symmetric(vertical: 4.h),
+      color: Get.theme.dividerColor,
     );
   }
 }

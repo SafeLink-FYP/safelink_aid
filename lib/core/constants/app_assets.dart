@@ -5,8 +5,10 @@ class AppAssets {
   // ICONS
   static const String analyticsIcon = 'assets/icons/Analytics-Icon.svg';
   static const String appleIcon = 'assets/icons/Apple-Icon.svg';
+  static const String arrowIcon = 'assets/icons/Arrow-Icon.svg';
   static const String buildingIcon = 'assets/icons/Building-Icon.svg';
   static const String cameraIcon = 'assets/icons/Camera-Icon.svg';
+  static const String chatIcon = 'assets/icons/Chat-Icon.svg';
   static const String checkIcon = 'assets/icons/Check-Icon.svg';
   static const String clockIcon = 'assets/icons/Clock-Icon.svg';
   static const String cubeIcon = 'assets/icons/Cube-Icon.svg';
@@ -16,6 +18,7 @@ class AppAssets {
   static const String homeIcon = 'assets/icons/Home-Icon.svg';
   static const String locationIcon = 'assets/icons/Location-Icon.svg';
   static const String mapIcon = 'assets/icons/Map-Icon.svg';
+  static const String mindIcon = 'assets/icons/Mind-Icon.svg';
   static const String personIcon = 'assets/icons/Person-Icon.svg';
   static const String phoneIcon = 'assets/icons/Phone-Icon.svg';
   static const String requestsIcon = 'assets/icons/Requests-Icon.svg';

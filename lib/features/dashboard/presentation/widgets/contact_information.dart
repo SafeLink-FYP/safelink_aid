@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:safelink_aid/core/constants/app_assets.dart';
 import 'package:safelink_aid/core/themes/app_theme.dart';
+import 'package:safelink_aid/features/profile/controllers/profile_controller.dart';
 
 class ContactInformation extends StatelessWidget {
   const ContactInformation({super.key});
@@ -11,114 +12,141 @@ class ContactInformation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Get.theme;
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 20.w),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: theme.dividerColor, width: 1.w),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.transparentColor.withValues(alpha: 0.10),
-            offset: const Offset(0, 1),
-            blurRadius: 3.r,
-            spreadRadius: 0.r,
-          ),
-          BoxShadow(
-            color: AppTheme.transparentColor.withValues(alpha: 0.10),
-            offset: const Offset(0, 1),
-            blurRadius: 2.r,
-            spreadRadius: -1.r,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildContactTile(
-            label: 'Contact Number',
-            description: '+92 51 1234567',
-            leadingIcon: AppAssets.phoneIcon,
-            iconBackgroundGradient: AppTheme.primaryGradient,
-            context: context,
-          ),
-          _buildDivider(context: context),
-          _buildContactTile(
-            label: 'Email Address',
-            description: 'contact@reliefpk.org',
-            leadingIcon: AppAssets.emailIcon,
-            iconBackgroundGradient: AppTheme.purpleGradient,
-            context: context,
-          ),
-          _buildDivider(context: context),
-          _buildContactTile(
-            label: 'Address',
-            description: 'F-7 Markaz, Islamabad',
-            leadingIcon: AppAssets.locationIcon,
-            iconBackgroundGradient: AppTheme.greenGradient,
-            context: context,
-          ),
-        ],
-      ),
-    );
-  }
+    final ctrl = Get.find<ProfileController>();
 
-  Widget _buildContactTile({
-    required String label,
-    required String description,
-    required String leadingIcon,
-    required Gradient iconBackgroundGradient,
-    required BuildContext context,
-  }) {
-    final theme = Get.theme;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 25.h, horizontal: 15.w),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: iconBackgroundGradient,
-          ),
-          child: SvgPicture.asset(
-            leadingIcon,
-            width: 20.w,
-            height: 20.h,
-            colorFilter: ColorFilter.mode(AppTheme.white, BlendMode.srcIn),
-          ),
-        ),
-        SizedBox(width: 10.w),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: theme.textTheme.bodySmall),
-            SizedBox(height: 5.h),
-            Text(description, style: theme.textTheme.headlineMedium),
+    return Obx(() {
+      final profile = ctrl.profile.value;
+      final aidProfile = ctrl.aidProfile.value;
+
+      final phone = (profile?.phone?.isNotEmpty ?? false)
+          ? profile!.phone!
+          : 'Not provided';
+      final email = (profile?.email.isNotEmpty ?? false)
+          ? profile!.email
+          : 'Not provided';
+      final location = _buildLocation(profile?.region, profile?.city);
+      final cnic = (profile?.cnic?.isNotEmpty ?? false)
+          ? profile!.cnic!
+          : 'Not provided';
+      final department = (aidProfile?.department?.isNotEmpty ?? false)
+          ? aidProfile!.department!
+          : 'Not assigned';
+
+      return Container(
+        padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 20.w),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(color: theme.dividerColor, width: 1.w),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.black.withValues(alpha: 0.04),
+              offset: const Offset(0, 2),
+              blurRadius: 8.r,
+            ),
           ],
         ),
-        Spacer(),
-        Icon(Icons.arrow_forward_ios, size: 15.sp),
-      ],
+        child: Column(
+          children: [
+            _buildRow(
+              theme: theme,
+              label: 'Phone',
+              value: phone,
+              icon: AppAssets.phoneIcon,
+              gradient: AppTheme.primaryGradient,
+            ),
+            _buildDivider(),
+            _buildRow(
+              theme: theme,
+              label: 'Email',
+              value: email,
+              icon: AppAssets.emailIcon,
+              gradient: AppTheme.purpleGradient,
+            ),
+            _buildDivider(),
+            _buildRow(
+              theme: theme,
+              label: 'Location',
+              value: location,
+              icon: AppAssets.locationIcon,
+              gradient: AppTheme.greenGradient,
+            ),
+            _buildDivider(),
+            _buildRow(
+              theme: theme,
+              label: 'CNIC',
+              value: cnic,
+              icon: AppAssets.shieldIcon,
+              gradient: AppTheme.orangeGradient,
+            ),
+            _buildDivider(),
+            _buildRow(
+              theme: theme,
+              label: 'Department',
+              value: department,
+              icon: AppAssets.buildingIcon,
+              gradient: AppTheme.primaryGradient,
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  String _buildLocation(String? region, String? city) {
+    final parts = [city, region].where((s) => s != null && s.isNotEmpty).toList();
+    return parts.isNotEmpty ? parts.join(', ') : 'Not provided';
+  }
+
+  Widget _buildRow({
+    required ThemeData theme,
+    required String label,
+    required String value,
+    required String icon,
+    required Gradient gradient,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 6.h),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(10.r),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: gradient,
+            ),
+            child: SvgPicture.asset(
+              icon,
+              width: 16.w,
+              height: 16.h,
+              colorFilter: const ColorFilter.mode(AppTheme.white, BlendMode.srcIn),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: theme.textTheme.bodySmall),
+                SizedBox(height: 3.h),
+                Text(
+                  value,
+                  style: theme.textTheme.headlineMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildDivider({required BuildContext context}) {
-    final theme = Get.theme;
+  Widget _buildDivider() {
     return Container(
       height: 1,
-      margin: EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            Colors.grey.shade400,
-            Colors.grey.shade200,
-            Colors.grey.shade400,
-          ],
-          stops: const [0.0, 0.5, 1.0],
-        ),
-      ),
+      margin: EdgeInsets.symmetric(vertical: 4.h),
+      color: Get.theme.dividerColor,
     );
   }
 }

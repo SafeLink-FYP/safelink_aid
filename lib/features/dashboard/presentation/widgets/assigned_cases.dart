@@ -12,6 +12,7 @@ class AssignedCases extends StatelessWidget {
   final String icon;
   final Color iconColor;
   final Color iconBackgroundColor;
+  final VoidCallback? onManage;
 
   const AssignedCases({
     super.key,
@@ -22,6 +23,7 @@ class AssignedCases extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     required this.iconBackgroundColor,
+    this.onManage,
   });
 
   @override
@@ -97,18 +99,21 @@ class AssignedCases extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 5.h),
-              Text('$location, $time', style: theme.textTheme.bodySmall),
+              Text(
+                location.isEmpty ? time : '$location  ·  $time',
+                style: theme.textTheme.bodySmall,
+              ),
             ],
           ),
           Spacer(),
           InkWell(
-            onTap: () {},
+            onTap: onManage,
             borderRadius: BorderRadius.circular(10.r),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(color: AppTheme.borderColor),
+                border: Border.all(color: theme.dividerColor),
               ),
               child: Text('Manage', style: theme.textTheme.bodyMedium),
             ),

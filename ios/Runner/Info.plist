@@ -45,5 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Google Maps API key. Substituted at build time from
+	     ios/Config/Secrets.xcconfig (MAPS_API_KEY). Never commit. -->
+	<key>GMSApiKey</key>
+	<string>$(MAPS_API_KEY)</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>maps</string>
+		<string>comgooglemaps</string>
+	</array>
 </dict>
 </plist>

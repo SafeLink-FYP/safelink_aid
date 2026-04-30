@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class GradientHeader extends StatelessWidget {
-  final Gradient? gradient;
+  final Gradient gradient;
   final Widget child;
-  const GradientHeader({super.key, this.gradient, required this.child});
+
+  const GradientHeader({
+    super.key,
+    required this.gradient,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {

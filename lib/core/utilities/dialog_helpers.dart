@@ -1,5 +1,6 @@
-import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:safelink_aid/core/utilities/error_message.dart';
 
 class DialogHelpers {
   static void showLoadingDialog() {
@@ -17,17 +18,30 @@ class DialogHelpers {
       message,
       backgroundColor: Colors.green,
       colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
+      snackPosition: SnackPosition.BOTTOM,
     );
   }
 
-  static void showFailure({required String title, required String message}) {
+  /// Show a failure snackbar.
+  ///
+  /// Either pass a friendly [message] directly, or pass the raw [error] and
+  /// it will be routed through [errorMessage] so Postgres / Supabase
+  /// internals never leak to the user.
+  static void showFailure({
+    required String title,
+    String? message,
+    Object? error,
+  }) {
+    final body = message ??
+        (error != null
+            ? errorMessage(error)
+            : 'Something went wrong. Please try again.');
     Get.snackbar(
       title,
-      message,
-      snackPosition: SnackPosition.BOTTOM,
+      body,
       backgroundColor: Colors.red,
       colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
     );
   }
 }

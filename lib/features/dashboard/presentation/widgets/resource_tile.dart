@@ -16,9 +16,31 @@ class ResourceTile extends StatelessWidget {
     required this.totalCount,
   });
 
+  // Stock status — checked in priority order: out > low > ok.
+  // "Low" mirrors ResourceModel.isLowStock (utilization > 0.8 with total > 0).
+  ({String label, Color color}) _stockStatus() {
+    if (availableCount <= 0) {
+      return (label: 'Out of stock', color: AppTheme.red);
+    }
+    if (totalCount > 0) {
+      final used = totalCount - availableCount;
+      final utilization = (used / totalCount).clamp(0.0, 1.0);
+      if (utilization > 0.8) {
+        return (label: 'Low', color: AppTheme.orange);
+      }
+    }
+    return (label: 'OK', color: AppTheme.green);
+  }
+
+  double _progressValue() {
+    if (totalCount <= 0) return 0;
+    return (availableCount / totalCount).clamp(0.0, 1.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Get.theme;
+    final status = _stockStatus();
     return Container(
       padding: EdgeInsets.all(15.r),
       decoration: BoxDecoration(
@@ -74,11 +96,34 @@ class ResourceTile extends StatelessWidget {
                 ],
               ),
               Spacer(),
-              Container(decoration: BoxDecoration(), child: Text('Good Stock')),
+              Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: status.color.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(
+                    color: status.color.withValues(alpha: 0.30),
+                  ),
+                ),
+                child: Text(
+                  status.label,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: status.color,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ],
           ),
           SizedBox(height: 20.h),
-          LinearProgressIndicator(value: (availableCount / totalCount)),
+          // Override the global progressIndicatorTheme.linearMinHeight (10.h)
+          // — that height is appropriate for full-screen loaders but reads
+          // heavy inside an inline tile.
+          LinearProgressIndicator(
+            value: _progressValue(),
+            minHeight: 4.h,
+          ),
         ],
       ),
     );

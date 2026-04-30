@@ -8,7 +8,6 @@ import 'package:safelink_aid/core/widgets/custom_elevated_button.dart';
 import 'package:safelink_aid/features/onboarding/controllers/onboarding_navigation_controller.dart';
 import 'package:safelink_aid/features/onboarding/presentation/widgets/carousal_indicator.dart';
 
-
 class OnboardingView extends StatefulWidget {
   const OnboardingView({super.key});
 
@@ -23,87 +22,132 @@ class _OnboardingViewState extends State<OnboardingView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Get.theme;
+    final theme = Theme.of(context);
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 25.w, vertical: 15.h),
-              child: Obx(() {
-                return navigationController.currentPage.value < 2
-                    ? Align(
-                  alignment: Alignment.topRight,
-                  child: TextButton(
-                    onPressed: () => navigationController.skip(),
-                    child: Text(
-                      'Skip',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontSize: 18.sp,
-                      ),
-                    ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.center,
+                  radius: 1.r,
+                  colors: [
+                    AppTheme.primaryColor.withValues(alpha: 0.05),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: -60.h,
+            right: -40.w,
+            child: Container(
+              width: 200.w,
+              height: 200.h,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.primaryColor.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -80.h,
+            left: -50.w,
+            child: Container(
+              width: 250.w,
+              height: 250.h,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.purple.withValues(alpha: 0.06),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 25.w,
+                    vertical: 15.h,
                   ),
-                )
-                    : SizedBox(height: 50.h);
-              }),
-            ),
-            SizedBox(height: 15.h),
-            Expanded(
-              child: PageView.builder(
-                itemCount: 3,
-                controller: navigationController.pageController,
-                onPageChanged: (value) =>
-                navigationController.currentPage.value = value,
-                itemBuilder: (context, index) {
-                  Widget page;
-                  switch (index) {
-                    case 0:
-                      page = _buildPageOne(theme);
-                      break;
-                    case 1:
-                      page = _buildPageTwo(theme);
-                      break;
-                    case 2:
-                      page = _buildPageThree(theme);
-                      break;
-                    default:
-                      page = SizedBox.shrink();
-                      break;
-                  }
-                  return Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 40.w,
-                      vertical: 15.h,
-                    ),
-                    child: page,
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(40.w, 0.h, 40.w, 50.h),
-              child: Column(
-                children: [
-                  Obx(() {
-                    return CarousalIndicator(
-                      currentPage: navigationController.currentPage.value,
-                      itemCount: 3,
-                    );
+                  child: Obx(() {
+                    return navigationController.currentPage.value < 2
+                        ? Align(
+                            alignment: Alignment.topRight,
+                            child: TextButton(
+                              onPressed: () => navigationController.skip(),
+                              child: Text(
+                                'Skip',
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  fontSize: 18.sp,
+                                ),
+                              ),
+                            ),
+                          )
+                        : SizedBox(height: 50.h);
                   }),
-                  SizedBox(height: 50.h),
-                  Obx(() {
-                    return CustomElevatedButton(
-                      label: navigationController.currentPage < 2
-                          ? 'Next'
-                          : 'Continue',
-                      onPressed: () => navigationController.nextPage(),
-                    );
-                  }),
-                ],
-              ),
+                ),
+                SizedBox(height: 15.h),
+                Expanded(
+                  child: PageView.builder(
+                    itemCount: 3,
+                    controller: navigationController.pageController,
+                    onPageChanged: (value) =>
+                        navigationController.currentPage.value = value,
+                    itemBuilder: (context, index) {
+                      Widget page;
+                      switch (index) {
+                        case 0:
+                          page = _buildPageOne(theme);
+                          break;
+                        case 1:
+                          page = _buildPageTwo(theme);
+                          break;
+                        case 2:
+                          page = _buildPageThree(theme);
+                          break;
+                        default:
+                          page = SizedBox.shrink();
+                          break;
+                      }
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 40.w,
+                          vertical: 15.h,
+                        ),
+                        child: page,
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(40.w, 0.h, 40.w, 50.h),
+                  child: Column(
+                    children: [
+                      Obx(() {
+                        return CarousalIndicator(
+                          currentPage: navigationController.currentPage.value,
+                          itemCount: 3,
+                        );
+                      }),
+                      SizedBox(height: 50.h),
+                      Obx(() {
+                        return CustomElevatedButton(
+                          label: navigationController.currentPage < 2
+                              ? 'Next'
+                              : 'Continue',
+                          onPressed: () => navigationController.nextPage(),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -131,7 +175,7 @@ class _OnboardingViewState extends State<OnboardingView> {
               gradient: AppTheme.primaryGradient,
             ),
             child: SvgPicture.asset(
-              AppAssets.appleIcon,
+              AppAssets.mindIcon,
               width: 90.w,
               height: 90.h,
               colorFilter: ColorFilter.mode(AppTheme.white, BlendMode.srcIn),
@@ -146,19 +190,19 @@ class _OnboardingViewState extends State<OnboardingView> {
             border: Border.all(color: theme.primaryColor),
           ),
           child: Text(
-            'Stay Ahead of Natural Disasters',
+            'Coordinate Relief, Together',
             style: theme.textTheme.headlineSmall,
           ),
         ),
         SizedBox(height: 25.h),
         Text(
-          'AI-Powered Disaster Prediction',
+          'Join Your Response Team',
           style: theme.textTheme.titleLarge,
           textAlign: TextAlign.center,
         ),
         SizedBox(height: 25.h),
         Text(
-          'Get early warnings about floods, earthquakes, and storms in your area. SafeLink helps you prepare and protect what matters most - your family.',
+          'Create a new Government-approved Team or join one with a code. Once approved, you and your teammates respond to dispatched cases together.',
           style: theme.textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),
@@ -204,19 +248,19 @@ class _OnboardingViewState extends State<OnboardingView> {
             border: Border.all(color: theme.primaryColor),
           ),
           child: Text(
-            'Visualize danger zones in real-time',
+            'See where you\'re dispatched',
             style: theme.textTheme.headlineSmall,
           ),
         ),
         SizedBox(height: 25.h),
         Text(
-          'Interactive Risk Heatmaps',
+          'Receive Assigned Cases',
           style: theme.textTheme.titleLarge,
           textAlign: TextAlign.center,
         ),
         SizedBox(height: 25.h),
         Text(
-          'Google Maps integration displays live disaster risk zones with color-coded heatmaps. Find safe routes, evacuation centers, and emergency shelters instantly.',
+          'Government dispatches aid requests to your Team in real time. Each case shows the requester\'s details and a map pinning the exact location.',
           style: theme.textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),
@@ -247,7 +291,7 @@ class _OnboardingViewState extends State<OnboardingView> {
               gradient: AppTheme.primaryGradient,
             ),
             child: SvgPicture.asset(
-              AppAssets.buildingIcon,
+              AppAssets.chatIcon,
               width: 90.w,
               height: 90.h,
               colorFilter: ColorFilter.mode(AppTheme.white, BlendMode.srcIn),
@@ -262,19 +306,19 @@ class _OnboardingViewState extends State<OnboardingView> {
             border: Border.all(color: theme.primaryColor),
           ),
           child: Text(
-            'Instant help when you need it most',
+            'Respond and resolve, end to end',
             style: theme.textTheme.headlineSmall,
           ),
         ),
         SizedBox(height: 25.h),
         Text(
-          'Emergency SOS & AI Support',
+          'Manage Resources & Update Cases',
           style: theme.textTheme.titleLarge,
           textAlign: TextAlign.center,
         ),
         SizedBox(height: 25.h),
         Text(
-          'One-tap SOS alerts emergency services and nearby responders. Get immediate medical guidance from our AI chatbot and direct connection to relief teams.',
+          'Track your Team\'s inventory, mark cases in-progress, fulfill or reject requests with a reason, and keep citizens informed at every step.',
           style: theme.textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),

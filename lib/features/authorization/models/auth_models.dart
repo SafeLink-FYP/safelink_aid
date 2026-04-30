@@ -1,39 +1,46 @@
 import 'dart:io';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUpModel {
-  final String firstName;
-  final String lastName;
+  final String fullName;
   final String email;
   final String password;
   final String cnic;
   final String dateOfBirth;
   final String? phone;
+  final String? region;
+  final String? city;
   final File? profilePicture;
 
   const SignUpModel({
-    required this.firstName,
-    required this.lastName,
+    required this.fullName,
     required this.email,
     required this.password,
-    this.phone,
     required this.cnic,
     required this.dateOfBirth,
+    this.phone,
+    this.region,
+    this.city,
     this.profilePicture,
   });
 
+  /// Organization, designation, and department are intentionally NOT here.
+  /// The user picks/inherits an org when they create or join a team — that's
+  /// when `aid_worker_profiles` is first written. The handle_new_user trigger
+  /// skips the aid_worker_profiles INSERT when organization_id is missing,
+  /// which is the desired behavior.
   Map<String, dynamic> toAuthMetadata() => {
-    'firstName': firstName.trim(),
-    'lastName': lastName.trim(),
+    'full_name': fullName.trim(),
     'phone': phone,
     'cnic': cnic.trim(),
-    'dateOfBirth': dateOfBirth,
+    'date_of_birth': dateOfBirth,
     'role': 'aid_worker',
+    'region': region?.trim(),
+    'city': city?.trim(),
   };
 
+  /// Avatar uploads happen after signup, so they're the only column the
+  /// `handle_new_user` trigger can't populate from auth metadata.
   Map<String, dynamic> toProfileUpdate(String? avatarUrl) => {
-    'phone': phone,
-    'date_of_birth': dateOfBirth,
     if (avatarUrl != null) 'avatar_url': avatarUrl,
   };
 }
@@ -41,12 +48,10 @@ class SignUpModel {
 class SignInModel {
   final String email;
   final String password;
-  final bool rememberMe;
 
   const SignInModel({
     required this.email,
     required this.password,
-    this.rememberMe = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -61,10 +66,4 @@ class ResetPasswordModel {
   const ResetPasswordModel({required this.email});
 
   Map<String, dynamic> toJson() => {'email': email.trim()};
-}
-
-class OAuthSignInModel {
-  final OAuthProvider provider;
-
-  const OAuthSignInModel({required this.provider});
 }
